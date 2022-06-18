@@ -1,3 +1,4 @@
+import datetime
 from flask import Flask, jsonify, render_template, request, session
 import sqlite3
 import hashlib
@@ -119,6 +120,35 @@ def login():
 
 
 #====ajax====
+
+
+
+
+@app.route('/purchase/addPurchase')
+def addPurchase():
+    data=request.args
+    count = data.get('count')
+    item_id = data.get('itemid')
+    conn = sqlite3.connect('data-dev.sqlite')
+    cur=conn.cursor()
+    cur.execute('''
+            INSERT INTO purchases (timestamp, customer_id,item_id,count) 
+            VALUES 
+            ('{timestamp}', {customer_id}, {item_id}, {count})'''
+            .format(
+                timestamp=datetime.datetime.now(),
+                customer_id=session['id'],
+                item_id=item_id,
+                count=count
+                )
+        )
+    conn.commit()
+    conn.close()
+    return 'ok'
+
+
+
+
 @app.route('/getItemList')
 def getItemList():
     conn = sqlite3.connect('data-dev.sqlite')
@@ -126,39 +156,7 @@ def getItemList():
     cur.execute("SELECT * FROM items")
     rows = cur.fetchall()
     conn.close()
-    return jsonify(rows)
-
-
-@app.route('/axlogin')
-def axlogin():
-
-    data = request.args
-    name = data.get('name')
-    pw = data.get('pw')
-
-    conn = sqlite3.connect('data-dev.sqlite')
-    cur=conn.cursor()
-    cur.execute('''
-    SELECT * FROM users WHERE username='{name}' AND password_hash='{pw}'
-    '''
-    .format(name=name, pw=getEncryptedString(pw))
-    )
-    rows = cur.fetchall()
-    conn.close()
-    if(rows):
-        auth = rows[0][1]
-        session['username']=rows[0][1]
-        session['auth']="a" if rows[0][2] == 1 else "c"
-        
-        print('session====')
-        print(session['username'])  
-        print(session['auth'])
-
-
-
-        return 'ok'
-    else:
-        return "fail"    
+    return jsonify(rows)   
     
 
 @app.route('/addUser')
