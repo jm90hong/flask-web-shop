@@ -49,12 +49,12 @@ function loadData(){
                                 '<span>'+item[1]+'</span>'+
                             '</div>'+
                             '<div>'+
-                                '<span class="remove-btn txt-btn" data-item-id='+item[0]+'>Remove</span>'+
+                                '<span class="remove-btn txt-btn" data-item-name="'+item[1]+'" data-item-id='+item[0]+'>Remove</span>'+
                                 ' | '+
-                                '<span class="complete-btn txt-btn" data-item-id='+item[0]+'>Complete</span>'+
+                                '<span class="complete-btn txt-btn" data-item-name="'+item[1]+'" data-item-id='+item[0]+'>Complete</span>'+
                             '</div>'+
                         '</div>'
-    
+                        
                     )
                 })
             },
@@ -99,6 +99,7 @@ function initClickEvents(){
         var test =confirm('해당 상품을 삭제 하시겠습니까?');
         if(test){
             var item_id = $(this).data('item-id');
+            var item_name = $(this).data('item-name');
             $.ajax({
                 url:'./remove/'+item_id,
                 type:'get',
@@ -107,6 +108,9 @@ function initClickEvents(){
                     if(data=='ok'){
                         alert('상품 삭제 완료');
                         location.reload();
+                    }else if(data=='ex'){
+                        $('.yellow-box').find('.title').html('Cannot remove '+item_name+'. It is bought by someone.');
+                        $('.yellow-box').show();
                     }
                 },
                 error:function(err){
@@ -122,6 +126,7 @@ function initClickEvents(){
         var test =confirm('해당 상품을 배송 처리 하시겠습니까?');
         if(test){
             var item_id = $(this).data('item-id');
+            var item_name = $(this).data('item-name');
             $.ajax({
                 url:'./complete/'+item_id,
                 type:'get',
@@ -131,7 +136,8 @@ function initClickEvents(){
                         alert('상품 배송 처리완료');
                         location.reload();
                     }else if(data=='fail'){
-                        alert('주문한 상품이 없습니다.');
+                        $('.yellow-box').find('.title').html('Cannot complete '+item_name+' Nobody bought it.');
+                        $('.yellow-box').show();
                     }
                 },
                 error:function(err){

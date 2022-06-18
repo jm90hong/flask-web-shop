@@ -7,9 +7,7 @@ $(document).ready(function(){
 
 
 function initClickEvents(){
-    $(document).on('click','.x',function(){
-       $('.can-login-box').remove();
-    })
+   
 
    
     //로그인 페이지 이동

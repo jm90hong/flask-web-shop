@@ -191,14 +191,24 @@ def remove(itemid):
     conn = sqlite3.connect('data-dev.sqlite')
     cur=conn.cursor()
     cur.execute('''
-            DELETE FROM items
-            WHERE id={id}
-            '''
-            .format(id=itemid)
-        )
-    conn.commit()
-    conn.close()
-    return 'ok'
+    SELECT * FROM purchases 
+    WHERE item_id={item_id}'''.format(item_id=itemid))
+
+    rows = cur.fetchall()
+    if(rows):
+        conn.commit()
+        conn.close()
+        return 'ex'
+    else:
+        cur.execute('''
+                DELETE FROM items
+                WHERE id={id}
+                '''
+                .format(id=itemid)
+            )
+        conn.commit()
+        conn.close()
+        return 'ok'
 
 @app.route('/add')
 def add():

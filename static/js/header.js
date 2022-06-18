@@ -1,6 +1,11 @@
 const ipAdress='http://127.0.0.1:5000';
 
 $(document).ready(function(){
+    $(document).on('click','.x',function(){
+        $('.yellow-box').hide();
+    })
+    
+    
     $('.go-main').click(function(){
         location.href=ipAdress
     }); 

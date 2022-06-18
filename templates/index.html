@@ -42,14 +42,14 @@
     <div>
 
       <!--canLogin 값으로 판단-->
-      {% if canLogin == "y" %}
-        <div class="can-login-box">
-          <span>You can now login.</span>
-          <span class="x">X</span>
-        </div>
-      {%else%}
-        <div></div>
-      {% endif %}
+      
+      <div class="yellow-box" style="display: none;">
+        <span class="title">You can now login.</span>
+        <span class="x">X</span>
+      </div>
+      
+      
+     
       <div class="img-wrapper">
         <img class="user-img" src="./static/img/user-img.png"/>
       </div>
@@ -60,7 +60,6 @@
         {% else %}
           Stranger!
         {% endif %}
-       
       </div>
       {% if session['auth'] == 'a' %}
       <div>
@@ -70,9 +69,6 @@
       </div>
       {% else %}
       {% endif %}
-
-
-
       <div id="list-container" class="list-container">
          
       </div>
