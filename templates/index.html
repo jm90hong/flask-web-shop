@@ -8,27 +8,28 @@
   integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" 
   crossorigin="anonymous"></script>
   <script type="text/javascript" src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"></script>
-  
+  <script type="text/javascript" src="{{ url_for('static', filename='js/header.js') }}"></script>
 </head>
 
 
 
 <body>
-  <input id="ss-auth" type="hidden" value="{{session['auth']}}"/>
-  <input id="ss-username" type="hidden" value="{{session['username']}}"/>
+ 
   <header class="top-header">
+    <input id="ss-auth" type="hidden" value="{{session['auth']}}"/>
+    <input id="ss-username" type="hidden" value="{{session['username']}}"/>
     <div>
-      <nav class="nav-btn">Main</nav>
-      <nav class="nav-btn">Home</nav>
+      <nav class="nav-btn go-main">Main</nav>
+      <nav class="nav-btn go-main">Home</nav>
     </div>
     <div>
 
       <!--session 값 여부 확인-->
       {% if session['auth'] == 'a' %}
-      <nav class="nav-btn">Log Out</nav>
+      <nav id="logout-btn" class="nav-btn">Log Out</nav>
       {% elif session['auth'] == 'c' %}
-      <nav class="nav-btn">Log Out</nav>
-      <nav class="nav-btn">History</nav>
+      <nav id="logout-btn"  class="nav-btn">Log Out</nav>
+      <nav class="nav-btn go-history">History</nav>
       {% else %}
       <nav id="go-login-btn" class="nav-btn">Log In</nav>
       <nav id="go-register-btn" class="nav-btn">Register</nav>
@@ -61,7 +62,17 @@
         {% endif %}
        
       </div>
-      
+      {% if session['auth'] == 'a' %}
+      <div>
+        <div style="color:var(--color-main);font-size:16px;font-weight:700;margin-top:10px;">name of new item?</div>
+        <input id="item-name" class="app-inp" placeholder="type name of item..."/>
+        <button id="add-item-btn" class="app-btn">Submit</button>
+      </div>
+      {% else %}
+      {% endif %}
+
+
+
       <div id="list-container" class="list-container">
          
       </div>

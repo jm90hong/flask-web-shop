@@ -109,13 +109,13 @@ img.user-img{
     background-color: #f2f2f2;
 }
 
-.purchase-btn{
+.txt-btn{
     margin-top:3px;
     color:#0D7FFF;
     cursor: pointer;
 }
 
-.purchase-btn:hover{
+.txt-btn:hover{
     color:var(--color-main);
 }
 
@@ -179,4 +179,18 @@ button.app-btn:hover{
 
 .can-login-box > span.x{
     cursor: pointer;
+}
+
+.shipping-tag{
+    padding: 3px 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color:#fff;
+    border-radius: 10px;
+    background-color: #1AD400;
+    margin-right: 10px;
+}
+
+.cred{
+    color:#C50000;
 }

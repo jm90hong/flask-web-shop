@@ -1,4 +1,5 @@
 import datetime
+from this import d
 from flask import Flask, jsonify, render_template, request, session
 import sqlite3
 import hashlib
@@ -20,7 +21,7 @@ def init():
         conn.execute('CREATE TABLE roles (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)')
         conn.execute('CREATE TABLE items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)')
         conn.execute('CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, role_id INTEGER, password_hash TEXT)')
-        conn.execute('CREATE TABLE purchases (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT,customer_id TEXT,item_id TEXT,count TEXT)')
+        conn.execute('CREATE TABLE purchases (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT,customer_id INTEGER,item_id INTEGER,count INTEGER, complete_ny TEXT)')
         
         
 
@@ -76,9 +77,28 @@ def makedb():
     init()
     return 'SQLite DB has been made!'
 
+@app.route('/users/<uname>')
+def  history(uname):
+    user_id = session['id']
+    
+
+    conn = sqlite3.connect('data-dev.sqlite')
+    cur=conn.cursor()
+    cur.execute("SELECT COUNT(*) FROM purchases WHERE customer_id={ctid}".format(ctid=user_id))
+    num = cur.fetchone()[0]
+    conn.close()
 
 
-#====페이지====
+    return render_template(
+        "history.html",
+        session = session,
+        totalCount=num
+    )
+
+
+
+
+#====PAGE====
 @app.route('/')
 def home():
     init()
@@ -86,7 +106,7 @@ def home():
     canLogin = data.get('canLogin')
     return render_template(
             "index.html",
-            session1 = session,
+            session = session,
             canLogin=canLogin
         )
 
@@ -119,8 +139,98 @@ def login():
     return render_template("login.html")
 
 
-#====ajax====
 
+
+
+#====ajax====
+@app.route('/complete/<itemid>')
+def complete(itemid):
+    print('==itemid')
+    print(itemid)
+    conn = sqlite3.connect('data-dev.sqlite')
+    cur=conn.cursor()
+
+    #purchase에 해당 아이템이 있는지 조사
+    cur.execute('''
+            SELECT * FROM purchases
+            WHERE item_id={itemid}
+            '''
+            .format(itemid=itemid)
+        )
+    rows = cur.fetchall()
+    if(rows):
+        #아이템이 있으면? => 배송 처리
+        cur.execute('''
+            UPDATE purchases
+            SET 
+                complete_ny='y'
+            WHERE item_id={item_id}
+            '''
+            .format(item_id=itemid)
+        )
+        conn.commit()
+        conn.close()
+        return 'ok'
+        
+    else:
+        #아이템이 없으면? => 배송 불가
+        
+        conn.commit()
+        conn.close()
+        return 'fail'
+    
+    
+    
+    
+    
+
+
+@app.route('/remove/<itemid>')
+def remove(itemid):
+    
+    conn = sqlite3.connect('data-dev.sqlite')
+    cur=conn.cursor()
+    cur.execute('''
+            DELETE FROM items
+            WHERE id={id}
+            '''
+            .format(id=itemid)
+        )
+    conn.commit()
+    conn.close()
+    return 'ok'
+
+@app.route('/add')
+def add():
+    data = request.args
+    item_name = data.get('name')
+    conn = sqlite3.connect('data-dev.sqlite')
+    cur=conn.cursor()
+    cur.execute('''
+            INSERT INTO items
+            (name)
+            VALUES
+            ('{itemName}')
+            '''
+            .format(itemName=item_name)
+        )
+    conn.commit()
+    conn.close()
+    return 'ok'
+
+@app.route('/cancel/<purchaseId>')
+def cancelPurchase(purchaseId):
+    conn = sqlite3.connect('data-dev.sqlite')
+    cur=conn.cursor()
+    cur.execute('''
+            DELETE FROM purchases
+            WHERE id={id}
+            '''
+            .format(id=purchaseId)
+        )
+    conn.commit()
+    conn.close()
+    return 'ok'
 
 
 
@@ -132,9 +242,9 @@ def addPurchase():
     conn = sqlite3.connect('data-dev.sqlite')
     cur=conn.cursor()
     cur.execute('''
-            INSERT INTO purchases (timestamp, customer_id,item_id,count) 
+            INSERT INTO purchases (timestamp, customer_id,item_id,count,complete_ny) 
             VALUES 
-            ('{timestamp}', {customer_id}, {item_id}, {count})'''
+            ('{timestamp}', {customer_id}, {item_id}, {count}, 'n')'''
             .format(
                 timestamp=datetime.datetime.now(),
                 customer_id=session['id'],
@@ -146,7 +256,22 @@ def addPurchase():
     conn.close()
     return 'ok'
 
+@app.route('/getPuchaseListByUser')
+def getItemListByUser():
 
+    user_id = session['id']
+    
+
+    conn = sqlite3.connect('data-dev.sqlite')
+    cur=conn.cursor()
+    cur.execute('''
+    SELECT * FROM purchases AS p
+    INNER JOIN items AS i
+    ON p.item_id = i.id
+    WHERE customer_id={ctid}'''.format(ctid=user_id))
+    rows = cur.fetchall()
+    conn.close()
+    return jsonify(rows)   
 
 
 @app.route('/getItemList')
@@ -158,6 +283,37 @@ def getItemList():
     conn.close()
     return jsonify(rows)   
     
+
+@app.route('/axlogin')
+def axlogin():
+
+    data = request.args
+    name = data.get('name')
+    pw = data.get('pw')
+
+    conn = sqlite3.connect('data-dev.sqlite')
+    cur=conn.cursor()
+    cur.execute('''
+    SELECT * FROM users WHERE username='{name}' AND password_hash='{pw}'
+    '''
+    .format(name=name, pw=getEncryptedString(pw))
+    )
+    rows = cur.fetchall()
+    conn.close()
+    if(rows):
+        auth = rows[0][1]
+        session['id']=rows[0][0]
+        session['username']=rows[0][1]
+        session['auth']="a" if rows[0][2] == 1 else "c"
+        
+       
+
+
+
+        return 'ok'
+    else:
+        return "fail"  
+
 
 @app.route('/addUser')
 def addUser():
@@ -185,7 +341,16 @@ def addUser():
         return 'ok'
    
 
+
+
+@app.route('/auth/logout')
+def logout():
+    #session reset
+    for key in list(session.keys()):
+        session.pop(key)
+    return 'ok'
    
+
 
 
 
