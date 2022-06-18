@@ -86,8 +86,37 @@ img.user-img{
     padding-left: 10px;
 }
 
+
+.one-item-box-pc{
+    width:100%;
+    height: 58px;
+    background-color:#fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    border-bottom: 1px solid #f2f2f2;
+    cursor: pointer;
+    padding-left: 10px;
+}
+
 .one-item-box:hover{
     background-color: #f2f2f2;
+}
+
+.one-item-box-pc:hover{
+    background-color: #f2f2f2;
+}
+
+.purchase-btn{
+    margin-top:3px;
+    color:#0D7FFF;
+    cursor: pointer;
+}
+
+.purchase-btn:hover{
+    color:var(--color-main);
 }
 
 

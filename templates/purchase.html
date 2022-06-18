@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>로그인</title>
+  <title>상품 구매</title>
   <meta charset="utf-8" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js" 
   integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" 
   crossorigin="anonymous"></script>
   <script type="text/javascript" src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='js/login.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='js/purchase.js') }}"></script>
 </head>
 
 
@@ -35,26 +35,17 @@
   </header>
   <div class="main-container">
     <div>
-      <div class="can-login-box">
-        <span>You can now login.</span>
-        <span class="x">X</span>
-      </div>
-
       <div class="img-wrapper">
-        <img class="user-img" src="./static/img/user-img.png"/>
+        <img class="user-img" src="../static/img/user-img.png"/>
       </div>
       <div class="hello-txt">
-        Log In
+        {{session['username']}} is buying {{itemName}}
       </div>
 
       <div class="forms-div">
-        <div class="title">Username</div>
-        <input id="name" class="app-inp" placeholder="아이디"/>
-        <div class="title">Password1</div>
-        <input id="pw" type="password" class="app-inp" placeholder="비밀번호"/>
-        
-
-        <button id="login-btn" class="app-btn">Log In</button>
+        <div class="title">Count</div>
+        <input type="number" id="name" class="app-inp" placeholder="how many {{itemName}}?"/>
+        <button id="final-purchase-btn" class="app-btn">Purchase</button>
       </div>    
     </div>
     

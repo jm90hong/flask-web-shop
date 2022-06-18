@@ -1,19 +1,17 @@
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, session
 import sqlite3
 import hashlib
 app = Flask(__name__)
-
+app.secret_key = "sdkaofkoa12321"
 
 def getEncryptedString(str):
     m = hashlib.md5()
     m.update(str.encode('utf-8'))
     return m.hexdigest()
 
+
 def init():
     print('초기화 작업')
-
-   
-   
     try:
         conn = sqlite3.connect('data-dev.sqlite')
 
@@ -65,7 +63,6 @@ def init():
                 .format(username=user['name'], role_id=user['role_id'], password_hash=user['password'])
             )
 
-        
         conn.commit()
 
     except Exception as e:
@@ -86,8 +83,27 @@ def home():
     init()
     data = request.args
     canLogin = data.get('canLogin')
-    return render_template("index.html",canLogin=canLogin)
+    return render_template(
+            "index.html",
+            session1 = session,
+            canLogin=canLogin
+        )
 
+
+@app.route('/purchase/<itemId>')
+def purchase(itemId):
+    #item id 에 해당하는 item 가져오기
+    conn = sqlite3.connect('data-dev.sqlite')
+    cur=conn.cursor()
+    cur.execute("SELECT * FROM items WHERE id='{id}'".format(id=itemId))
+    rows = cur.fetchall()
+    conn.close()
+    return render_template(
+            "purchase.html",
+            session=session,
+            itemName=rows[0][1],
+            itemId=rows[0][0]
+        )
 
 
 
@@ -101,6 +117,7 @@ def register():
 def login():
     return render_template("login.html")
 
+
 #====ajax====
 @app.route('/getItemList')
 def getItemList():
@@ -111,6 +128,38 @@ def getItemList():
     conn.close()
     return jsonify(rows)
 
+
+@app.route('/axlogin')
+def axlogin():
+
+    data = request.args
+    name = data.get('name')
+    pw = data.get('pw')
+
+    conn = sqlite3.connect('data-dev.sqlite')
+    cur=conn.cursor()
+    cur.execute('''
+    SELECT * FROM users WHERE username='{name}' AND password_hash='{pw}'
+    '''
+    .format(name=name, pw=getEncryptedString(pw))
+    )
+    rows = cur.fetchall()
+    conn.close()
+    if(rows):
+        auth = rows[0][1]
+        session['username']=rows[0][1]
+        session['auth']="a" if rows[0][2] == 1 else "c"
+        
+        print('session====')
+        print(session['username'])  
+        print(session['auth'])
+
+
+
+        return 'ok'
+    else:
+        return "fail"    
+    
 
 @app.route('/addUser')
 def addUser():
